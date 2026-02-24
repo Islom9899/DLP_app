@@ -1,0 +1,7 @@
+hidapi>=0.14.0
+customtkinter>=5.2.0
+numpy>=1.24.0
+Pillow>=10.0.0
+zarr>=2.16.0
+numcodecs>=0.12.0
+pyinstaller>=6.0.0
