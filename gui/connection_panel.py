@@ -74,9 +74,9 @@ class ConnectionPanel(ctk.CTkFrame):
         self._ip_label = ctk.CTkLabel(self, text=t("ip"))
         self._ip_label.grid(row=2, column=6, padx=(10, 2), pady=2, sticky="e")
 
-        self.ip_entry = ctk.CTkEntry(self, width=130, placeholder_text="192.168.1.100")
+        self.ip_entry = ctk.CTkEntry(self, width=130, placeholder_text="192.168.0.1")
         self.ip_entry.grid(row=2, column=7, columnspan=2, padx=2, pady=2, sticky="w")
-        self.ip_entry.insert(0, "192.168.1.100")
+        self.ip_entry.insert(0, "192.168.0.1")
 
         self._port_label = ctk.CTkLabel(self, text=t("port"))
         self._port_label.grid(row=2, column=9, padx=(5, 2), pady=2, sticky="e")

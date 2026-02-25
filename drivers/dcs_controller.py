@@ -33,7 +33,7 @@ class DCSController:
     MODE_NAMES = {0: 'Off', 1: 'Continuous', 2: 'Strobe'}
     MODE_FROM_NAME = {'Off': 0, 'Continuous': 1, 'Strobe': 2}
 
-    def __init__(self, ip_address: str = "192.168.1.100",
+    def __init__(self, ip_address: str = "192.168.0.1",
                  port: int = DEFAULT_PORT,
                  channel: str = "CHANNEL1"):
         self.ip_address = ip_address
