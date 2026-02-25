@@ -20,7 +20,7 @@ class DCSController:
     Thread-safe for use from GUI threads.
     """
 
-    DEFAULT_PORT = 30303
+    DEFAULT_PORT = 7777
     RECV_BUFFER = 1024
     ENCODING = 'ascii'
     TIMEOUT = 5.0
@@ -139,9 +139,9 @@ class DCSController:
         """
         Set current level in milliamps.
 
-        :param level_ma: 0-1000 mA
+        :param level_ma: 0-400 mA
         """
-        level_ma = max(0, min(1000, int(level_ma)))
+        level_ma = max(0, min(400, int(level_ma)))
         return self._send_command(f"SET:LEVEL:{self.channel},{level_ma};")
 
     def get_level(self) -> str:
@@ -151,12 +151,12 @@ class DCSController:
     def set_intensity_percent(self, percent: float) -> str:
         """
         Set intensity as a percentage (0-100%).
-        Maps linearly to 0-1000 mA.
+        Maps linearly to 0-400 mA.
 
         :param percent: 0.0 to 100.0
         """
         percent = max(0.0, min(100.0, percent))
-        level_ma = int(percent * 10)
+        level_ma = int(percent * 4)
         return self.set_level(level_ma)
 
     # =========================================================================
