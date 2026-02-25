@@ -3,10 +3,12 @@ Main application window.
 Composes all GUI panels and manages device connections.
 """
 
+import time
 import customtkinter as ctk
 
 from drivers.dlp_driver import dlp6500, dlp9000, dlpc900_dmd
 from drivers.dcs_controller import DCSController
+from gui.i18n import t, set_lang, get_lang, add_listener, LANGUAGES
 from gui.connection_panel import ConnectionPanel
 from gui.dlp_panel import DLPPanel
 from gui.dcs_panel import DCSPanel
@@ -21,7 +23,7 @@ class DLPApp(ctk.CTk):
         super().__init__()
 
         # Window setup
-        self.title("DLP + DCS Controller")
+        self.title(t("app_title"))
         self.geometry("950x750")
         self.minsize(800, 600)
 
@@ -33,12 +35,39 @@ class DLPApp(ctk.CTk):
         self.dcs = None
 
         # =====================================================================
+        # Language selector (top-right)
+        # =====================================================================
+        lang_frame = ctk.CTkFrame(self, fg_color="transparent")
+        lang_frame.pack(fill="x", padx=10, pady=(6, 0))
+
+        self._lang_label = ctk.CTkLabel(lang_frame, text=t("language") + ":",
+                                         font=ctk.CTkFont(size=12))
+        self._lang_label.pack(side="right", padx=(5, 0))
+
+        # Determine current display name
+        current_display = "English"
+        for name, code in LANGUAGES.items():
+            if code == get_lang():
+                current_display = name
+                break
+
+        self._lang_var = ctk.StringVar(value=current_display)
+        self._lang_menu = ctk.CTkOptionMenu(
+            lang_frame,
+            values=list(LANGUAGES.keys()),
+            variable=self._lang_var,
+            width=100,
+            command=self._on_language_changed
+        )
+        self._lang_menu.pack(side="right", padx=(0, 5))
+
+        # =====================================================================
         # GUI Layout
         # =====================================================================
 
         # Connection panel (top)
         self.connection_panel = ConnectionPanel(self, app_controller=self)
-        self.connection_panel.pack(fill="x", padx=10, pady=(10, 5))
+        self.connection_panel.pack(fill="x", padx=10, pady=(5, 5))
 
         # Middle: two-column device controls
         controls_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -63,10 +92,26 @@ class DLPApp(ctk.CTk):
         self.status_bar.pack(fill="x", padx=10, pady=(0, 10))
 
         # Welcome message
-        self.log("Ilova ishga tushdi. Qurilmalarni ulang.")
+        self.log(t("app_started"))
+
+        # Register language change listener for this window
+        add_listener(self._refresh_language)
 
         # Handle close
         self.protocol("WM_DELETE_WINDOW", self._on_close)
+
+    # =========================================================================
+    # Language
+    # =========================================================================
+    def _on_language_changed(self, display_name: str):
+        """Handle language selection change."""
+        lang_code = LANGUAGES.get(display_name, "en")
+        set_lang(lang_code)
+
+    def _refresh_language(self):
+        """Update this window's own translatable widgets."""
+        self.title(t("app_title"))
+        self._lang_label.configure(text=t("language") + ":")
 
     # =========================================================================
     # Properties
@@ -87,26 +132,43 @@ class DLPApp(ctk.CTk):
         self.after(0, lambda: self.status_bar.log(message))
 
     # =========================================================================
-    # DLP connection
+    # DLP connection (FIXED: single connection, no double-open)
     # =========================================================================
     def connect_dlp(self):
-        """Connect to DLP6500 via USB HID. Called from background thread."""
-        # First detect DMD type
-        temp_dmd = dlpc900_dmd(debug=False, initialize=True)
-        dmd_type_info = temp_dmd.get_firmware_type()
-        dmd_type = dmd_type_info.get('dmd type', 'unknown')
-        del temp_dmd
+        """Connect to DLP6500/DLP9000 via USB HID. Called from background thread."""
+        # Create base class instance to detect DMD type
+        base_dmd = dlpc900_dmd(debug=False, initialize=True)
 
-        if dmd_type == "DLP6500":
-            self.dlp = dlp6500(debug=False, initialize=True)
-        elif dmd_type == "DLP9000":
-            self.dlp = dlp9000(debug=False, initialize=True)
+        try:
+            dmd_type_info = base_dmd.get_firmware_type()
+            dmd_type = dmd_type_info.get('dmd type', 'unknown')
+            fw = base_dmd.get_firmware_version()
+            fw_version = fw.get('app version', 'N/A')
+        except Exception:
+            dmd_type = 'unknown'
+            fw_version = 'N/A'
+
+        # Save the HID path so we can reopen the correct device
+        hid_path = base_dmd._hid_path
+
+        # Explicitly close the base connection before reopening
+        if base_dmd._dmd is not None:
+            base_dmd._dmd.close()
+            base_dmd._dmd = None
+        base_dmd.initialized = False
+        del base_dmd
+
+        # Brief pause to ensure USB device is fully released
+        time.sleep(0.3)
+
+        # Now open the correct subclass using the saved HID path
+        if dmd_type == "DLP9000":
+            self.dlp = dlp9000(debug=False, initialize=True, hid_path=hid_path)
         else:
-            self.dlp = dlp6500(debug=False, initialize=True)
+            # Default to DLP6500 for unknown types
+            self.dlp = dlp6500(debug=False, initialize=True, hid_path=hid_path)
 
-        # Get firmware version for display
-        fw = self.dlp.get_firmware_version()
-        self.log(f"DMD turi: {dmd_type}, Firmware: {fw.get('app version', 'N/A')}")
+        self.log(t("dmd_type_firmware").format(dmd_type, fw_version))
 
     def disconnect_dlp(self):
         """Disconnect DLP6500."""
@@ -115,7 +177,13 @@ class DLPApp(ctk.CTk):
                 self.dlp.start_stop_sequence('stop')
             except Exception:
                 pass
-            del self.dlp
+            try:
+                if self.dlp._dmd is not None:
+                    self.dlp._dmd.close()
+                    self.dlp._dmd = None
+            except Exception:
+                pass
+            self.dlp.initialized = False
             self.dlp = None
 
     # =========================================================================
@@ -127,7 +195,7 @@ class DLPApp(ctk.CTk):
         success = self.dcs.connect()
         if not success:
             self.dcs = None
-            raise ConnectionError(f"DCS ga ulanib bo'lmadi ({ip}:{port})")
+            raise ConnectionError(t("dcs_connect_failed").format(ip, port))
 
     def disconnect_dcs(self):
         """Disconnect DCS Controller."""

@@ -5,6 +5,8 @@ Status bar with scrollable log messages.
 import datetime
 import customtkinter as ctk
 
+from gui.i18n import t, add_listener
+
 
 class StatusBar(ctk.CTkFrame):
     """Bottom status bar showing timestamped log messages."""
@@ -15,9 +17,9 @@ class StatusBar(ctk.CTkFrame):
         self.configure(corner_radius=8)
 
         # Title
-        title = ctk.CTkLabel(self, text="Jurnal",
+        self._title = ctk.CTkLabel(self, text=t("log"),
                               font=ctk.CTkFont(size=12, weight="bold"))
-        title.pack(anchor="w", padx=10, pady=(4, 0))
+        self._title.pack(anchor="w", padx=10, pady=(4, 0))
 
         # Textbox for log messages
         self.textbox = ctk.CTkTextbox(self, height=100,
@@ -27,11 +29,19 @@ class StatusBar(ctk.CTkFrame):
         self.textbox.pack(fill="both", expand=True, padx=8, pady=(2, 6))
 
         # Clear button
-        clear_btn = ctk.CTkButton(self, text="Tozalash", width=70, height=24,
+        self._clear_btn = ctk.CTkButton(self, text=t("clear"), width=70, height=24,
                                    font=ctk.CTkFont(size=10),
                                    fg_color="#555555",
                                    command=self.clear)
-        clear_btn.place(relx=1.0, rely=0.0, x=-14, y=4, anchor="ne")
+        self._clear_btn.place(relx=1.0, rely=0.0, x=-14, y=4, anchor="ne")
+
+        # Register for language changes
+        add_listener(self._refresh_language)
+
+    def _refresh_language(self):
+        """Update all translatable text."""
+        self._title.configure(text=t("log"))
+        self._clear_btn.configure(text=t("clear"))
 
     def log(self, message: str):
         """Add timestamped message to log."""

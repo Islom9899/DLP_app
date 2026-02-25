@@ -59,6 +59,7 @@ a = Analysis(
         'gui.dcs_panel',
         'gui.project_panel',
         'gui.status_bar',
+        'gui.i18n',
     ],
     hookspath=[],
     hooksconfig={},
