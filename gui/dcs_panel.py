@@ -5,6 +5,8 @@ Intensity slider, mode selector (Off/Continuous/Strobe), channel selection.
 
 import customtkinter as ctk
 
+from gui.i18n import t, add_listener
+
 
 class DCSPanel(ctk.CTkFrame):
     """DCS light controller panel."""
@@ -17,15 +19,15 @@ class DCSPanel(ctk.CTkFrame):
         self.configure(corner_radius=8)
 
         # Title
-        title = ctk.CTkLabel(self, text="DCS Yorug'lik Boshqaruvi",
+        self._title = ctk.CTkLabel(self, text=t("dcs_light_control"),
                               font=ctk.CTkFont(size=14, weight="bold"))
-        title.grid(row=0, column=0, columnspan=2, padx=10, pady=(8, 4), sticky="w")
+        self._title.grid(row=0, column=0, columnspan=2, padx=10, pady=(8, 4), sticky="w")
 
         # =====================================================================
         # Channel selector
         # =====================================================================
-        ch_label = ctk.CTkLabel(self, text="Kanal:")
-        ch_label.grid(row=1, column=0, padx=(10, 5), pady=4, sticky="w")
+        self._ch_label = ctk.CTkLabel(self, text=t("channel"))
+        self._ch_label.grid(row=1, column=0, padx=(10, 5), pady=4, sticky="w")
 
         self.channel_var = ctk.StringVar(value="CHANNEL1")
         self.channel_menu = ctk.CTkOptionMenu(
@@ -38,8 +40,8 @@ class DCSPanel(ctk.CTkFrame):
         # =====================================================================
         # Mode selector
         # =====================================================================
-        mode_label = ctk.CTkLabel(self, text="Rejim:")
-        mode_label.grid(row=2, column=0, padx=(10, 5), pady=4, sticky="w")
+        self._mode_label = ctk.CTkLabel(self, text=t("mode"))
+        self._mode_label.grid(row=2, column=0, padx=(10, 5), pady=4, sticky="w")
 
         self.mode_var = ctk.StringVar(value="Off")
         self.mode_selector = ctk.CTkSegmentedButton(
@@ -52,8 +54,8 @@ class DCSPanel(ctk.CTkFrame):
         # =====================================================================
         # Intensity slider
         # =====================================================================
-        intensity_label = ctk.CTkLabel(self, text="Intensivlik:")
-        intensity_label.grid(row=3, column=0, padx=(10, 5), pady=4, sticky="w")
+        self._intensity_label = ctk.CTkLabel(self, text=t("intensity"))
+        self._intensity_label.grid(row=3, column=0, padx=(10, 5), pady=4, sticky="w")
 
         slider_frame = ctk.CTkFrame(self, fg_color="transparent")
         slider_frame.grid(row=3, column=1, padx=(5, 10), pady=4, sticky="ew")
@@ -66,15 +68,15 @@ class DCSPanel(ctk.CTkFrame):
         self.intensity_slider.set(0)
         self.intensity_slider.pack(side="left", fill="x", expand=True, padx=(0, 8))
 
-        self.intensity_label = ctk.CTkLabel(slider_frame, text="0%", width=45,
+        self.intensity_value_label = ctk.CTkLabel(slider_frame, text="0%", width=45,
                                              font=ctk.CTkFont(size=13, weight="bold"))
-        self.intensity_label.pack(side="right")
+        self.intensity_value_label.pack(side="right")
 
         # =====================================================================
         # Intensity entry (exact value)
         # =====================================================================
-        exact_label = ctk.CTkLabel(self, text="Aniq qiymat (%):")
-        exact_label.grid(row=4, column=0, padx=(10, 5), pady=4, sticky="w")
+        self._exact_label = ctk.CTkLabel(self, text=t("exact_value"))
+        self._exact_label.grid(row=4, column=0, padx=(10, 5), pady=4, sticky="w")
 
         exact_frame = ctk.CTkFrame(self, fg_color="transparent")
         exact_frame.grid(row=4, column=1, padx=(5, 10), pady=4, sticky="w")
@@ -83,14 +85,14 @@ class DCSPanel(ctk.CTkFrame):
         self.intensity_entry.pack(side="left", padx=(0, 5))
         self.intensity_entry.insert(0, "0")
 
-        set_btn = ctk.CTkButton(exact_frame, text="O'rnatish", width=80,
+        self._set_btn = ctk.CTkButton(exact_frame, text=t("set_value"), width=80,
                                  command=self._set_exact_intensity)
-        set_btn.pack(side="left")
+        self._set_btn.pack(side="left")
 
         # =====================================================================
         # Apply button
         # =====================================================================
-        self.apply_btn = ctk.CTkButton(self, text="Sozlamalarni Qo'llash",
+        self.apply_btn = ctk.CTkButton(self, text=t("apply_settings"),
                                         fg_color="#2d6a4f",
                                         command=self._apply_settings)
         self.apply_btn.grid(row=5, column=0, columnspan=2,
@@ -100,12 +102,12 @@ class DCSPanel(ctk.CTkFrame):
         quick_frame = ctk.CTkFrame(self, fg_color="transparent")
         quick_frame.grid(row=6, column=0, columnspan=2, padx=10, pady=(4, 8), sticky="ew")
 
-        self.on_btn = ctk.CTkButton(quick_frame, text="Yoqish (100%)",
+        self.on_btn = ctk.CTkButton(quick_frame, text=t("turn_on"),
                                      fg_color="#1b4332", width=100,
                                      command=self._quick_on)
         self.on_btn.pack(side="left", padx=(0, 5), expand=True, fill="x")
 
-        self.off_btn = ctk.CTkButton(quick_frame, text="O'chirish",
+        self.off_btn = ctk.CTkButton(quick_frame, text=t("turn_off"),
                                       fg_color="#6c1010", width=100,
                                       command=self._quick_off)
         self.off_btn.pack(side="left", padx=(5, 0), expand=True, fill="x")
@@ -118,11 +120,26 @@ class DCSPanel(ctk.CTkFrame):
         # Configure grid weights
         self.grid_columnconfigure(1, weight=1)
 
+        # Register for language changes
+        add_listener(self._refresh_language)
+
+    def _refresh_language(self):
+        """Update all translatable text."""
+        self._title.configure(text=t("dcs_light_control"))
+        self._ch_label.configure(text=t("channel"))
+        self._mode_label.configure(text=t("mode"))
+        self._intensity_label.configure(text=t("intensity"))
+        self._exact_label.configure(text=t("exact_value"))
+        self._set_btn.configure(text=t("set_value"))
+        self.apply_btn.configure(text=t("apply_settings"))
+        self.on_btn.configure(text=t("turn_on"))
+        self.off_btn.configure(text=t("turn_off"))
+
     def _on_channel_changed(self, value: str):
         """Update DCS controller channel."""
         if self._app.dcs is not None:
             self._app.dcs.channel = value
-            self._app.log(f"DCS kanal o'zgartirildi: {value}")
+            self._app.log(t("dcs_channel_changed").format(value))
 
     def _on_mode_changed(self, value: str):
         """Handle mode change from segmented button."""
@@ -130,7 +147,7 @@ class DCSPanel(ctk.CTkFrame):
 
     def _on_slider_changed(self, value: float):
         """Update intensity label when slider moves."""
-        self.intensity_label.configure(text=f"{int(value)}%")
+        self.intensity_value_label.configure(text=f"{int(value)}%")
         self.intensity_entry.delete(0, "end")
         self.intensity_entry.insert(0, str(int(value)))
 
@@ -140,18 +157,18 @@ class DCSPanel(ctk.CTkFrame):
             val = float(self.intensity_entry.get())
             val = max(0, min(100, val))
             self.intensity_slider.set(val)
-            self.intensity_label.configure(text=f"{int(val)}%")
+            self.intensity_value_label.configure(text=f"{int(val)}%")
 
             if self._app.dcs_connected:
                 self._app.dcs.set_intensity_percent(val)
-                self._app.log(f"DCS intensivlik: {val:.0f}%")
+                self._app.log(t("dcs_intensity").format(val))
         except ValueError:
-            self._app.log("Xato: Intensivlik raqam bo'lishi kerak")
+            self._app.log(t("err_intensity_number"))
 
     def _apply_settings(self):
         """Apply all DCS settings."""
         if not self._app.dcs_connected:
-            self._app.log("Xato: DCS Controller ulanmagan")
+            self._app.log(t("err_dcs_not_connected"))
             return
 
         try:
@@ -164,43 +181,43 @@ class DCSPanel(ctk.CTkFrame):
             self._app.dcs.set_intensity_percent(intensity)
 
             self.status_label.configure(
-                text=f"Qo'llanildi: {mode_name}, {int(intensity)}%",
+                text=t("applied_settings").format(mode_name, int(intensity)),
                 text_color="#00CC00"
             )
-            self._app.log(f"DCS sozlamalari qo'llanildi: {mode_name}, {int(intensity)}%")
+            self._app.log(t("dcs_settings_applied").format(mode_name, int(intensity)))
         except Exception as e:
-            self.status_label.configure(text=f"Xato: {e}", text_color="#CC0000")
-            self._app.log(f"DCS xato: {e}")
+            self.status_label.configure(text=f"{t('error')}: {e}", text_color="#CC0000")
+            self._app.log(t("dcs_error_generic").format(e))
 
     def _quick_on(self):
         """Quick turn on at 100%."""
         if not self._app.dcs_connected:
-            self._app.log("Xato: DCS Controller ulanmagan")
+            self._app.log(t("err_dcs_not_connected"))
             return
 
         try:
             self._app.dcs.set_intensity_percent(100)
             self._app.dcs.set_mode(self._app.dcs.MODE_CONTINUOUS)
             self.intensity_slider.set(100)
-            self.intensity_label.configure(text="100%")
+            self.intensity_value_label.configure(text="100%")
             self.intensity_entry.delete(0, "end")
             self.intensity_entry.insert(0, "100")
             self.mode_var.set("Continuous")
-            self.status_label.configure(text="Yoqildi: Continuous, 100%", text_color="#00CC00")
-            self._app.log("DCS chirog'i yoqildi: Continuous, 100%")
+            self.status_label.configure(text=t("turned_on"), text_color="#00CC00")
+            self._app.log(t("dcs_light_on"))
         except Exception as e:
-            self._app.log(f"DCS xato: {e}")
+            self._app.log(t("dcs_error_generic").format(e))
 
     def _quick_off(self):
         """Quick turn off."""
         if not self._app.dcs_connected:
-            self._app.log("Xato: DCS Controller ulanmagan")
+            self._app.log(t("err_dcs_not_connected"))
             return
 
         try:
             self._app.dcs.turn_off()
             self.mode_var.set("Off")
-            self.status_label.configure(text="O'chirildi", text_color="gray")
-            self._app.log("DCS chirog'i o'chirildi")
+            self.status_label.configure(text=t("turned_off"), text_color="gray")
+            self._app.log(t("dcs_light_off"))
         except Exception as e:
-            self._app.log(f"DCS xato: {e}")
+            self._app.log(t("dcs_error_generic").format(e))
