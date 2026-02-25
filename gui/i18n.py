@@ -139,6 +139,21 @@ _STRINGS = {
         "dlp_sequence_stopped": "DLP pattern sequence stopped",
         "dlp_stop_error": "DLP stop error: {0}",
 
+        # DLP panel — click-to-project mode
+        "dlp_image_library": "Image Library",
+        "dlp_load_folder": "Load Folder",
+        "dlp_control_status": "Control & Status",
+        "dlp_stop_reset": "STOP / RESET DLP",
+        "dlp_idle": "Idle — click an image to project",
+        "dlp_projecting": "Projecting: {0}",
+        "dlp_projecting_log": "Projecting: {0} (exp={1}µs, dark={2}µs)",
+        "dlp_folder_loaded": "Loaded {0} image(s) from folder",
+        "dlp_no_images_in_folder": "No .bmp or .png files found in folder",
+        "dlp_projection_done": "Projection complete: {0}",
+        "dlp_projection_error": "Projection error: {0}",
+        "dlp_busy_projecting": "Busy: wait for current projection to finish",
+        "dlp_stopped_reset": "DLP stopped and reset",
+
         # DCS panel
         "dcs_panel_title": "DCS-100E/103E Control",
         "dcs_light_control": "DCS Light Control",
@@ -291,6 +306,21 @@ _STRINGS = {
         "dlp_start_error": "DLP 시작 오류: {0}",
         "dlp_sequence_stopped": "DLP 패턴 시퀀스 정지됨",
         "dlp_stop_error": "DLP 정지 오류: {0}",
+
+        # DLP panel — click-to-project mode
+        "dlp_image_library": "이미지 라이브러리",
+        "dlp_load_folder": "폴더 불러오기",
+        "dlp_control_status": "제어 및 상태",
+        "dlp_stop_reset": "DLP 정지 / 초기화",
+        "dlp_idle": "대기 중 — 이미지를 클릭하여 투사",
+        "dlp_projecting": "투사 중: {0}",
+        "dlp_projecting_log": "투사 중: {0} (exp={1}µs, dark={2}µs)",
+        "dlp_folder_loaded": "폴더에서 {0}개 이미지 로드됨",
+        "dlp_no_images_in_folder": "폴더에 .bmp 또는 .png 파일이 없습니다",
+        "dlp_projection_done": "투사 완료: {0}",
+        "dlp_projection_error": "투사 오류: {0}",
+        "dlp_busy_projecting": "투사 중: 현재 투사가 완료될 때까지 대기하세요",
+        "dlp_stopped_reset": "DLP 정지 및 초기화됨",
 
         # DCS panel
         "dcs_panel_title": "DCS-100E/103E 제어",
