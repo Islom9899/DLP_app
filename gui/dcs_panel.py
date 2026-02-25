@@ -145,6 +145,7 @@ class _ChannelColumn(ctk.CTkFrame):
             command=self._on_pulse
         )
         self.pulse_btn.pack(pady=(2, 8))
+        self._on_mode_changed(self.mode_var.get())
 
     # -----------------------------------------------------------------
     def _on_slider_changed(self, value: float):
@@ -158,7 +159,17 @@ class _ChannelColumn(ctk.CTkFrame):
                 self._app.log(t("dcs_error_generic").format(e))
 
     def _on_mode_changed(self, value: str):
-        """Send mode change to controller."""
+        """Send mode change to controller and update UI stste."""
+        # --- UI elementlarini bloklash/ochish mantig'i ---
+        ui_state = "disabled" if value == "Off" else "normal"
+        self.current_slider.configure(state=ui_state)
+        self.pulse_width_entry.configure(state=ui_state)
+        self.pulse_delay_entry.configure(state=ui_state)
+        self.rising_rb.configure(state=ui_state)
+        self.falling_rb.configure(state=ui_state)
+        self.trigger_input_entry.configure(state=ui_state)
+        self.pulse_btn.configure(state=ui_state)
+
         if self._app.dcs_connected:
             try:
                 self._app.dcs.set_mode_by_name(value, self._ch_name)

@@ -27,11 +27,11 @@ class DLPApp(ctk.CTk):
         self.geometry("1100x850")
         self.minsize(900, 700)
 
-        ctk.set_appearance_mode("dark")
+        ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
 
         # Dark charcoal background
-        self.configure(fg_color="#2b2b2b")
+        self.configure(fg_color="#F0F8FF")
 
         # Device instances
         self.dlp = None
