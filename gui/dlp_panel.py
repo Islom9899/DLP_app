@@ -235,7 +235,8 @@ class DLPPanel(ctk.CTkFrame):
                 )
                 self.after(0, lambda: self._on_upload_done(True))
             except Exception as e:
-                self.after(0, lambda: self._on_upload_done(False, str(e)))
+                msg = str(e)
+                self.after(0, lambda: self._on_upload_done(False, msg))
 
         threading.Thread(target=task, daemon=True).start()
 
