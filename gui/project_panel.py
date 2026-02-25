@@ -104,28 +104,30 @@ class ProjectPanel(ctk.CTkFrame):
         self._running = True
 
         try:
-            # Step 1: Activate DCS light source
+            # Step 1: Activate DCS light source (all channels)
             if self._app.dcs_connected:
                 self._update_status(t("dcs_turning_on"), "#CCCC00")
                 self._app.log(t("project_dcs_on"))
 
-                mode_name = "Continuous"
-                # Get current settings from DCS panel if available
+                # Apply settings from each channel column
                 try:
                     dcs_panel = self._app.dcs_panel
-                    mode_name = dcs_panel.mode_var.get()
-                    intensity = dcs_panel.intensity_slider.get()
-                    if mode_name == "Off":
-                        mode_name = "Continuous"
-                    self._app.dcs.set_intensity_percent(intensity)
+                    for i, col in enumerate(dcs_panel.channel_cols):
+                        ch_name = f"CHANNEL{i + 1}"
+                        mode_name = col.get_mode_name()
+                        current_ma = col.get_current_ma()
+                        if mode_name == "Off":
+                            mode_name = "Continuous"
+                        self._app.dcs.set_level(current_ma, ch_name)
+                        self._app.dcs.set_mode_by_name(mode_name, ch_name)
                 except Exception:
-                    self._app.dcs.set_intensity_percent(100)
-
-                self._app.dcs.set_mode_by_name(mode_name)
+                    # Fallback: turn on channel 1 at max
+                    self._app.dcs.set_level(400, "CHANNEL1")
+                    self._app.dcs.set_mode(self._app.dcs.MODE_CONTINUOUS, "CHANNEL1")
 
                 # Wait for light to stabilize
                 time.sleep(0.1)
-                self._app.log(t("dcs_light_activated").format(mode_name))
+                self._app.log(t("dcs_light_activated").format("all channels"))
 
             # Step 2: Start DLP pattern sequence
             if self._app.dlp_connected:
@@ -159,9 +161,9 @@ class ProjectPanel(ctk.CTkFrame):
                 self._app.dlp.start_stop_sequence('stop')
                 self._app.log(t("dlp_projection_stopped"))
 
-            # Step 2: Turn off DCS
+            # Step 2: Turn off all DCS channels
             if self._app.dcs_connected:
-                self._app.dcs.turn_off()
+                self._app.dcs.turn_off_all()
                 self._app.log(t("dcs_light_turned_off"))
 
             self._running = False

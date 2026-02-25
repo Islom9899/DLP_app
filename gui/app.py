@@ -24,11 +24,14 @@ class DLPApp(ctk.CTk):
 
         # Window setup
         self.title(t("app_title"))
-        self.geometry("950x750")
-        self.minsize(800, 600)
+        self.geometry("1100x850")
+        self.minsize(900, 700)
 
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
+
+        # Dark charcoal background
+        self.configure(fg_color="#2b2b2b")
 
         # Device instances
         self.dlp = None
@@ -62,32 +65,28 @@ class DLPApp(ctk.CTk):
         self._lang_menu.pack(side="right", padx=(0, 5))
 
         # =====================================================================
-        # GUI Layout
+        # Scrollable main content area
         # =====================================================================
+        main_scroll = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        main_scroll.pack(fill="both", expand=True, padx=10, pady=5)
 
-        # Connection panel (top)
-        self.connection_panel = ConnectionPanel(self, app_controller=self)
-        self.connection_panel.pack(fill="x", padx=10, pady=(5, 5))
+        # Connection panel (DLP only, top)
+        self.connection_panel = ConnectionPanel(main_scroll, app_controller=self)
+        self.connection_panel.pack(fill="x", pady=(0, 5))
 
-        # Middle: two-column device controls
-        controls_frame = ctk.CTkFrame(self, fg_color="transparent")
-        controls_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        # DLP panel (full width)
+        self.dlp_panel = DLPPanel(main_scroll, app_controller=self)
+        self.dlp_panel.pack(fill="x", pady=(0, 5))
 
-        self.dlp_panel = DLPPanel(controls_frame, app_controller=self)
-        self.dlp_panel.grid(row=0, column=0, sticky="nsew", padx=(0, 5), pady=0)
-
-        self.dcs_panel = DCSPanel(controls_frame, app_controller=self)
-        self.dcs_panel.grid(row=0, column=1, sticky="nsew", padx=(5, 0), pady=0)
-
-        controls_frame.grid_columnconfigure(0, weight=1)
-        controls_frame.grid_columnconfigure(1, weight=1)
-        controls_frame.grid_rowconfigure(0, weight=1)
+        # DCS panel (full width — 3-channel layout with embedded connection)
+        self.dcs_panel = DCSPanel(main_scroll, app_controller=self)
+        self.dcs_panel.pack(fill="x", pady=(0, 5))
 
         # Project panel (bottom)
-        self.project_panel = ProjectPanel(self, app_controller=self)
-        self.project_panel.pack(fill="x", padx=10, pady=(5, 5))
+        self.project_panel = ProjectPanel(main_scroll, app_controller=self)
+        self.project_panel.pack(fill="x", pady=(0, 5))
 
-        # Status bar (very bottom)
+        # Status bar (very bottom, outside scroll)
         self.status_bar = StatusBar(self)
         self.status_bar.pack(fill="x", padx=10, pady=(0, 10))
 
@@ -190,7 +189,7 @@ class DLPApp(ctk.CTk):
     # DCS connection
     # =========================================================================
     def connect_dcs(self, ip: str, port: int):
-        """Connect to DCS Controller via TCP. Called from background thread."""
+        """Connect to DCS Controller via UDP. Called from background thread."""
         self.dcs = DCSController(ip_address=ip, port=port)
         success = self.dcs.connect()
         if not success:
@@ -201,7 +200,7 @@ class DLPApp(ctk.CTk):
         """Disconnect DCS Controller."""
         if self.dcs is not None:
             try:
-                self.dcs.turn_off()
+                self.dcs.turn_off_all()
             except Exception:
                 pass
             self.dcs.disconnect()
