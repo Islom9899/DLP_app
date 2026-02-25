@@ -81,9 +81,9 @@ class ConnectionPanel(ctk.CTkFrame):
         self._port_label = ctk.CTkLabel(self, text=t("port"))
         self._port_label.grid(row=2, column=9, padx=(5, 2), pady=2, sticky="e")
 
-        self.port_entry = ctk.CTkEntry(self, width=70, placeholder_text="30303")
+        self.port_entry = ctk.CTkEntry(self, width=70, placeholder_text="7777")
         self.port_entry.grid(row=2, column=10, padx=2, pady=2, sticky="w")
-        self.port_entry.insert(0, "30303")
+        self.port_entry.insert(0, "7777")
 
         self.dcs_connect_btn = ctk.CTkButton(self, text=t("connect"), width=80,
                                               command=self._connect_dcs)
