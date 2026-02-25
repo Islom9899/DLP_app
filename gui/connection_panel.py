@@ -133,7 +133,8 @@ class ConnectionPanel(ctk.CTkFrame):
                 self._app.connect_dlp()
                 self.after(0, self._on_dlp_connected)
             except Exception as e:
-                self.after(0, lambda: self._on_dlp_error(str(e)))
+                msg = str(e)
+                self.after(0, lambda: self._on_dlp_error(msg))
 
         threading.Thread(target=task, daemon=True).start()
 
@@ -188,7 +189,8 @@ class ConnectionPanel(ctk.CTkFrame):
                 self._app.connect_dcs(ip, port)
                 self.after(0, self._on_dcs_connected)
             except Exception as e:
-                self.after(0, lambda: self._on_dcs_error(str(e)))
+                msg = str(e)
+                self.after(0, lambda: self._on_dcs_error(msg))
 
         threading.Thread(target=task, daemon=True).start()
 

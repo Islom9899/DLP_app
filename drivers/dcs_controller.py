@@ -1,6 +1,6 @@
 """
-TCP/IP client for Advanced Illumination DCS Series lighting controller.
-ASCII command protocol over TCP socket.
+UDP client for Advanced Illumination DCS Series lighting controller.
+ASCII command protocol over UDP socket.
 
 Protocol reference: Advanced Illumination DCS-100E/DCS-103E User Manual
 Command format: SET:PARAMETER:CHANNELx,value;
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class DCSController:
     """
-    TCP/IP client for Advanced Illumination DCS Series controller.
+    UDP client for Advanced Illumination DCS Series controller.
     Thread-safe for use from GUI threads.
     """
 
@@ -48,22 +48,33 @@ class DCSController:
         return self._connected
 
     def connect(self) -> bool:
-        """Establish TCP connection to DCS controller."""
+        """Create UDP socket and verify DCS controller is reachable."""
         try:
             self.disconnect()
-            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self._socket.settimeout(self.TIMEOUT)
-            self._socket.connect((self.ip_address, self.port))
+            # Verify controller is reachable by sending a query
+            self._socket.sendto(
+                f"GET:MODE:{self.channel};".encode(self.ENCODING),
+                (self.ip_address, self.port)
+            )
+            data, _ = self._socket.recvfrom(self.RECV_BUFFER)
             self._connected = True
             logger.info(f"Connected to DCS at {self.ip_address}:{self.port}")
             return True
         except (socket.error, socket.timeout, OSError) as e:
             self._connected = False
+            if self._socket:
+                try:
+                    self._socket.close()
+                except socket.error:
+                    pass
+                self._socket = None
             logger.error(f"DCS connection failed: {e}")
             return False
 
     def disconnect(self):
-        """Close TCP connection."""
+        """Close UDP socket."""
         if self._socket:
             try:
                 self._socket.close()
@@ -74,7 +85,7 @@ class DCSController:
 
     def _send_command(self, command: str) -> str:
         """
-        Send ASCII command and return response.
+        Send ASCII command via UDP and return response.
         Thread-safe.
 
         :param command: ASCII command string (e.g. "SET:MODE:CHANNEL1,1;")
@@ -86,9 +97,12 @@ class DCSController:
 
         with self._lock:
             try:
-                self._socket.sendall(command.encode(self.ENCODING))
-                response = self._socket.recv(self.RECV_BUFFER).decode(self.ENCODING)
-                return response.strip()
+                self._socket.sendto(
+                    command.encode(self.ENCODING),
+                    (self.ip_address, self.port)
+                )
+                data, _ = self._socket.recvfrom(self.RECV_BUFFER)
+                return data.decode(self.ENCODING).strip()
             except socket.timeout:
                 raise ConnectionError("DCS controller response timed out")
             except socket.error as e:
