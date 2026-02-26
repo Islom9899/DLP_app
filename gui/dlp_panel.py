@@ -251,7 +251,7 @@ class DLPPanel(ctk.CTkFrame):
                     patterns=img_array,
                     exp_times=exp_val,
                     dark_times=dark_val,
-                    num_repeats=1
+                    num_repeats=0
                 )
 
                 self.after(0, lambda: self._on_project_done(filename))

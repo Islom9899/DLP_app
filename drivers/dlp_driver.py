@@ -879,7 +879,7 @@ class dlpc900_dmd:
                                 exp_times: Optional[Union[Sequence[int], int]] = None,
                                 dark_times: Optional[Union[Sequence[int], int]] = 0,
                                 triggered: bool = False,
-                                clear_pattern_after_trigger: bool = True,
+                                clear_pattern_after_trigger: bool = False,
                                 bit_depth: int = 1,
                                 num_repeats: int = 0,
                                 compression_mode: str = 'erle'):
