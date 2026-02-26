@@ -12,7 +12,6 @@ from gui.i18n import t, set_lang, get_lang, add_listener, LANGUAGES
 from gui.connection_panel import ConnectionPanel
 from gui.dlp_panel import DLPPanel
 from gui.dcs_panel import DCSPanel
-from gui.project_panel import ProjectPanel
 from gui.status_bar import StatusBar
 
 
@@ -81,10 +80,6 @@ class DLPApp(ctk.CTk):
         # DCS panel (full width — 3-channel layout with embedded connection)
         self.dcs_panel = DCSPanel(main_scroll, app_controller=self)
         self.dcs_panel.pack(fill="x", pady=(0, 5))
-
-        # Project panel (bottom)
-        self.project_panel = ProjectPanel(main_scroll, app_controller=self)
-        self.project_panel.pack(fill="x", pady=(0, 5))
 
         # Status bar (very bottom, outside scroll)
         self.status_bar = StatusBar(self)

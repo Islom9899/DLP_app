@@ -185,11 +185,13 @@ class DLPPanel(ctk.CTkFrame):
 
         self._image_files = files
 
-        for filepath in files:
+        for index,filepath in enumerate(files, start=1):
             filename = os.path.basename(filepath)
+
+            display_text = f"{index:03d} - {filename}"
             btn = ctk.CTkButton(
                 self._image_scroll,
-                text=filename,
+                text=display_text,
                 height=28,
                 anchor="w",
                 fg_color="#555555",

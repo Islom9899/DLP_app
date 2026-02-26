@@ -57,7 +57,6 @@ a = Analysis(
         'gui.connection_panel',
         'gui.dlp_panel',
         'gui.dcs_panel',
-        'gui.project_panel',
         'gui.status_bar',
         'gui.i18n',
     ],
